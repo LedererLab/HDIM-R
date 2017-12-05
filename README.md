@@ -19,12 +19,46 @@ directory for Eigen 3, labeled `eigen3`, should be located under `/usr/include/`
 
 ## Supported Platforms
 
-This package is currently tested and officially supported only on **Linux** platforms.
+This package has been tested on, and currently supports the **Linux** and **Windows**
+ operating systems.
+
+## Installation
+
+### Windows
+
+Installation under Windows *requires* that the root directory of the Eigen3 library
+be located in the same directory as the root of the HDIM package.
+
+##### Dependencies
+
+* [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
+* [Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html)
+
+##### Building
+
+- Clone the HDIM package into the directory where the Eigen3 library is located.
+- Navigate to $PKG_DIR/R_Wrapper, where PKG_DIR is the root directory of the cloned repository.
+- Find the file `win_build.ps1` and run it using PowerShell.
+- This will run a preprocessing step using Rcpp then build and install the R Wrapper.
+
+
+### Linux
+
+##### Dependencies
+
+* [Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html)
+
+##### Building
+
+- Clone the HDIM package into a convenient location.
+- Navigate to $PKG_DIR/R_Wrapper, where PKG_DIR is the root directory of the cloned repository.
+- Find the file `nix_build.sh` and mark it as executable ( `chmod +x ./nix_build.sh` ).
+- This will run a preprocessing step using Rcpp then build and install the R Wrapper.
 
 ## Licensing
 
 The HDIM-R package is licensed under the GPLv3 license. To view the GPLv3 license please consult
-the `LICENSE.txt` file included with this package.
+the `HDIM/GPLv3.txt` file included with this package.
 
 ## Authors
 
