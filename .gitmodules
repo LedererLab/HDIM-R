@@ -1,0 +1,3 @@
+[submodule "HDIM/src"]
+	path = HDIM/src
+	url = https://github.com/LedererLab/FOS.git
