@@ -36,7 +36,7 @@ be located in the same directory as the root of the HDIM package.
 
 ##### Building
 
-- Clone the HDIM package into the directory where the Eigen3 library is located.
+- Clone the HDIM package into the directory where the Eigen3 library is located using `git clone --recursive`
 - Navigate to $PKG_DIR/R_Wrapper, where PKG_DIR is the root directory of the cloned repository.
 - Find the file `win_build.ps1` and run it using PowerShell.
 - This will run a preprocessing step using Rcpp then build and install the R Wrapper.
