@@ -18,7 +18,7 @@ sub-gradient descent methods or coordinate descent, both of which
 can use GAPSAFE screening rules or not.}
 
 \item{use_single_precision:}{If set to TRUE double-precision floating point values
-will be cast to single-precision. This will result in less memory usable and faster
+will be cast to single-precision. This will result in less memory use and faster
 execution, but may result in numerical precision issues.}
 }
 \value{

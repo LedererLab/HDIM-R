@@ -125,7 +125,7 @@ Rcpp::List __FOS( const Rcpp::NumericMatrix& X,
 //' sub-gradient descent methods or coordinate descent, both of which
 //' can use GAPSAFE screening rules or not.
 //' @param use_single_precision: If set to TRUE double-precision floating point values
-//' will be cast to single-precision. This will result in less memory usable and faster
+//' will be cast to single-precision. This will result in less memory use and faster
 //' execution, but may result in numerical precision issues.
 //'
 //' @return A list containing the results of the regression.
@@ -284,6 +284,62 @@ Rcpp::NumericVector __CD<unsigned int>( const Rcpp::NumericMatrix X,
 
 }
 
+//' @title Coordinate Descent
+//'
+//' Description
+//' @param X: An n x p design matrix.
+//' @param Y: A 1 x p matrix representing the predictors
+//' @param Beta_0: A 1 x n matrix that describes the initial guess for Beta
+//' @param Lambda: The regularization hyper-parameter, ie Lambda*|| Beta ||_1
+//' @param convergence_criteria: Can be either an positive integer descrbing the number
+//' if iterations that the solve should be run for, or a positive float describing
+//' the smallest allowable Duality Gap.
+//' @param use_screening_rules: Enable or disable GAPSAFE screening rules. Enabling
+//' these rules MAY speed up the algorithm.
+//' @param use_single_precision: If set to TRUE double-precision floating point values
+//' will be cast to single-precision. This will result in less memory use and faster
+//' execution, but may result in numerical precision issues.
+//'
+//' @return A vector containing the coefficients of Beta after the specified convergence
+//'    criteria has been meet.
+//'
+//' @description Use coordinate descent to iteratively solve the LASSO.
+//'
+//' @details In practice Coordinate Descent is often faster than sub-gradient
+//' methods such as ISTA and FISTA.
+//'
+//' @seealso \code{ISTA} and \code{FISTA}
+//'
+//' @references Geoff Gordon & Ryan Tibshirani
+//'   \emph{Coordinate descent},
+//'      \url{https://www.cs.cmu.edu/~ggordon/10725-F12/slides/25-coord-desc.pdf}\cr
+//'
+//' @author Benjamin J Phillips e-mail:bejphil@uw.edu
+//'
+//' @examples
+//' # Iterative solving
+//'
+//' library(HDIM)
+//'
+//' dataset <- matrix(rexp(200, rate=.1), ncol=20)
+//'
+//' Y <- dataset[, 1, drop = FALSE]
+//' X <- dataset
+//' Beta_0 <- as.matrix(numeric(ncol(X)))
+//'
+//' HDIM::CoordinateDescent( X, Y, Beta_0, 50, as.integer(5) )
+//'
+//' # Duality gap convergence criteria.
+//'
+//' library(HDIM)
+//'
+//' dataset <- matrix(rexp(200, rate=.1), ncol=20)
+//'
+//' Y <- dataset[, 1, drop = FALSE]
+//' X <- dataset
+//' Beta_0 <- as.matrix(numeric(ncol(X)))
+//'
+//' HDIM::CoordinateDescent( X, Y, Beta_0, 50, 0.1 )
 // [[Rcpp::export]]
 Rcpp::NumericVector CoordinateDescent( Rcpp::NumericMatrix& X,
                                        Rcpp::NumericVector& Y,
@@ -423,6 +479,59 @@ Rcpp::NumericVector __ISTA<unsigned int>( const Rcpp::NumericMatrix X,
 
 }
 
+//' @title Iterative Shrinkage Thresholding Algorithm ( ISTA )
+//'
+//' Description
+//' @param X: An n x p design matrix.
+//' @param Y: A 1 x p matrix representing the predictors
+//' @param Beta_0: A 1 x n matrix that describes the initial guess for Beta
+//' @param Lambda: The regularization hyper-parameter, ie Lambda*|| Beta ||_1
+//' @param convergence_criteria: Can be either an positive integer descrbing the number
+//' if iterations that the solve should be run for, or a positive float describing
+//' the smallest allowable Duality Gap.
+//' @param L_0: Learning rate used by the backtracking line search.
+//' @param use_screening_rules: Enable or disable GAPSAFE screening rules. Enabling
+//' these rules MAY speed up the algorithm.
+//' @param use_single_precision: If set to TRUE double-precision floating point values
+//' will be cast to single-precision. This will result in less memory use and faster
+//' execution, but may result in numerical precision issues.
+//'
+//' @return A vector containing the coefficients of Beta after the specified convergence
+//'    criteria has been meet.
+//'
+//' @description Use ISTA to iteritively solve the LASSO.
+//'
+//' @details In practice Coordinate Descent is often faster than sub-gradient
+//' methods such as this method and FISTA.
+//'
+//' @seealso \code{CoordinateDescent} and \code{FISTA}
+//'
+//' @author Benjamin J Phillips e-mail:bejphil@uw.edu
+//'
+//' @examples
+//' # Iterative solving
+//'
+//' library(HDIM)
+//'
+//' dataset <- matrix(rexp(200, rate=.1), ncol=20)
+//'
+//' Y <- dataset[, 1, drop = FALSE]
+//' X <- dataset
+//' Beta_0 <- as.matrix(numeric(ncol(X)))
+//'
+//' HDIM::ISTA( X, Y, Beta_0, 50, as.integer(5) )
+//'
+//' # Duality gap convergence criteria.
+//'
+//' library(HDIM)
+//'
+//' dataset <- matrix(rexp(200, rate=.1), ncol=20)
+//'
+//' Y <- dataset[, 1, drop = FALSE]
+//' X <- dataset
+//' Beta_0 <- as.matrix(numeric(ncol(X)))
+//'
+//' HDIM::ISTA( X, Y, Beta_0, 50, 0.1 )
 // [[Rcpp::export]]
 Rcpp::NumericVector ISTA( const Rcpp::NumericMatrix X,
                                        const Rcpp::NumericVector Y,
@@ -566,6 +675,66 @@ Rcpp::NumericVector __FISTA<unsigned int>( const Rcpp::NumericMatrix X,
 
 }
 
+//' @title Fast Iterative Shrinkage Thresholding Algorithm ( FISTA )
+//'
+//' Description
+//' @param X: An n x p design matrix.
+//' @param Y: A 1 x p matrix representing the predictors
+//' @param Beta_0: A 1 x n matrix that describes the initial guess for Beta
+//' @param Lambda: The regularization hyper-parameter, ie Lambda*|| Beta ||_1
+//' @param convergence_criteria: Can be either an positive integer descrbing the number
+//' if iterations that the solve should be run for, or a positive float describing
+//' the smallest allowable Duality Gap.
+//' @param L_0: Learning rate used by the backtracking line search.
+//' @param use_screening_rules: Enable or disable GAPSAFE screening rules. Enabling
+//' these rules MAY speed up the algorithm.
+//' @param use_single_precision: If set to TRUE double-precision floating point values
+//' will be cast to single-precision. This will result in less memory use and faster
+//' execution, but may result in numerical precision issues.
+//'
+//' @return A vector containing the coefficients of Beta after the specified convergence
+//'    criteria has been meet.
+//'
+//' @description Use FISTA to iteritively solve the LASSO.
+//'
+//' @details In practice Coordinate Descent is often faster than sub-gradient
+//' methods such as this method and ISTA. This method will be faster than ISTA
+//' in almost all cases.
+//'
+//' @seealso \code{CoordinateDescent} and \code{ISTA}
+//'
+//' @references Amir Beck & Marc Teboulle (2009)
+//'   \emph{AFastIterativeShrinkage-Thresholding Algorithm for Linear Inverse Problems},
+//'      \url{https://people.rennes.inria.fr/Cedric.Herzet/Cedric.Herzet/Sparse_Seminar/Entrees/2012/11/12_A_Fast_Iterative_Shrinkage-Thresholding_Algorithmfor_Linear_Inverse_Problems_(A._Beck,_M._Teboulle)_files/Breck_2009.pdf}\cr
+//'   \emph{SIAM J. IMAGING SCIENCES}\cr
+//'   \url{https://www.siam.org/journals/siims.php}\cr
+//'
+//' @author Benjamin J Phillips e-mail:bejphil@uw.edu
+//'
+//' @examples
+//' # Iterative solving
+//'
+//' library(HDIM)
+//'
+//' dataset <- matrix(rexp(200, rate=.1), ncol=20)
+//'
+//' Y <- dataset[, 1, drop = FALSE]
+//' X <- dataset
+//' Beta_0 <- as.matrix(numeric(ncol(X)))
+//'
+//' HDIM::FISTA( X, Y, Beta_0, 50, as.integer(5) )
+//'
+//' # Duality gap convergence criteria.
+//'
+//' library(HDIM)
+//'
+//' dataset <- matrix(rexp(200, rate=.1), ncol=20)
+//'
+//' Y <- dataset[, 1, drop = FALSE]
+//' X <- dataset
+//' Beta_0 <- as.matrix(numeric(ncol(X)))
+//'
+//' HDIM::FISTA( X, Y, Beta_0, 50, 0.1 )
 // [[Rcpp::export]]
 Rcpp::NumericVector FISTA( const Rcpp::NumericMatrix X,
                                        const Rcpp::NumericVector Y,
