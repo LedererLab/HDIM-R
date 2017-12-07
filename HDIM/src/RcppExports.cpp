@@ -19,191 +19,56 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// CD
-Rcpp::NumericVector CD(Rcpp::NumericMatrix X, Rcpp::NumericVector Y, Rcpp::NumericVector Beta_0, double lambda, unsigned int num_iterations);
-RcppExport SEXP HDIM_CD(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP lambdaSEXP, SEXP num_iterationsSEXP) {
+// CoordinateDescent
+Rcpp::NumericVector CoordinateDescent(Rcpp::NumericMatrix& X, Rcpp::NumericVector& Y, Rcpp::NumericVector& Beta_0, const double Lambda, SEXP convergence_criteria, const bool use_screening_rules, const bool use_single_precision);
+RcppExport SEXP HDIM_CoordinateDescent(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP LambdaSEXP, SEXP convergence_criteriaSEXP, SEXP use_screening_rulesSEXP, SEXP use_single_precisionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Beta_0(Beta_0SEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type num_iterations(num_iterationsSEXP);
-    rcpp_result_gen = Rcpp::wrap(CD(X, Y, Beta_0, lambda, num_iterations));
-    return rcpp_result_gen;
-END_RCPP
-}
-// CDSR
-Rcpp::NumericVector CDSR(Rcpp::NumericMatrix X, Rcpp::NumericVector Y, Rcpp::NumericVector Beta_0, double lambda, unsigned int num_iterations);
-RcppExport SEXP HDIM_CDSR(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP lambdaSEXP, SEXP num_iterationsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Beta_0(Beta_0SEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type num_iterations(num_iterationsSEXP);
-    rcpp_result_gen = Rcpp::wrap(CDSR(X, Y, Beta_0, lambda, num_iterations));
-    return rcpp_result_gen;
-END_RCPP
-}
-// CDDG
-Rcpp::NumericVector CDDG(Rcpp::NumericMatrix X, Rcpp::NumericVector Y, Rcpp::NumericVector Beta_0, double lambda, double duality_gap_target);
-RcppExport SEXP HDIM_CDDG(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP lambdaSEXP, SEXP duality_gap_targetSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Beta_0(Beta_0SEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< double >::type duality_gap_target(duality_gap_targetSEXP);
-    rcpp_result_gen = Rcpp::wrap(CDDG(X, Y, Beta_0, lambda, duality_gap_target));
-    return rcpp_result_gen;
-END_RCPP
-}
-// CDSRDG
-Rcpp::NumericVector CDSRDG(Rcpp::NumericMatrix X, Rcpp::NumericVector Y, Rcpp::NumericVector Beta_0, double lambda, double duality_gap_target);
-RcppExport SEXP HDIM_CDSRDG(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP lambdaSEXP, SEXP duality_gap_targetSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Beta_0(Beta_0SEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< double >::type duality_gap_target(duality_gap_targetSEXP);
-    rcpp_result_gen = Rcpp::wrap(CDSRDG(X, Y, Beta_0, lambda, duality_gap_target));
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector& >::type Beta_0(Beta_0SEXP);
+    Rcpp::traits::input_parameter< const double >::type Lambda(LambdaSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type convergence_criteria(convergence_criteriaSEXP);
+    Rcpp::traits::input_parameter< const bool >::type use_screening_rules(use_screening_rulesSEXP);
+    Rcpp::traits::input_parameter< const bool >::type use_single_precision(use_single_precisionSEXP);
+    rcpp_result_gen = Rcpp::wrap(CoordinateDescent(X, Y, Beta_0, Lambda, convergence_criteria, use_screening_rules, use_single_precision));
     return rcpp_result_gen;
 END_RCPP
 }
 // ISTA
-Rcpp::NumericVector ISTA(Rcpp::NumericMatrix X, Rcpp::NumericVector Y, Rcpp::NumericVector Beta_0, double lambda, unsigned int num_iterations, double L_0);
-RcppExport SEXP HDIM_ISTA(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP lambdaSEXP, SEXP num_iterationsSEXP, SEXP L_0SEXP) {
+Rcpp::NumericVector ISTA(const Rcpp::NumericMatrix X, const Rcpp::NumericVector Y, const Rcpp::NumericVector Beta_0, const double Lambda, const SEXP convergence_criteria, const double L_0, const bool use_screening_rules, const bool use_single_precision);
+RcppExport SEXP HDIM_ISTA(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP LambdaSEXP, SEXP convergence_criteriaSEXP, SEXP L_0SEXP, SEXP use_screening_rulesSEXP, SEXP use_single_precisionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Beta_0(Beta_0SEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type num_iterations(num_iterationsSEXP);
-    Rcpp::traits::input_parameter< double >::type L_0(L_0SEXP);
-    rcpp_result_gen = Rcpp::wrap(ISTA(X, Y, Beta_0, lambda, num_iterations, L_0));
-    return rcpp_result_gen;
-END_RCPP
-}
-// ISTASR
-Rcpp::NumericVector ISTASR(Rcpp::NumericMatrix X, Rcpp::NumericVector Y, Rcpp::NumericVector Beta_0, double lambda, unsigned int num_iterations, double L_0);
-RcppExport SEXP HDIM_ISTASR(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP lambdaSEXP, SEXP num_iterationsSEXP, SEXP L_0SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Beta_0(Beta_0SEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type num_iterations(num_iterationsSEXP);
-    Rcpp::traits::input_parameter< double >::type L_0(L_0SEXP);
-    rcpp_result_gen = Rcpp::wrap(ISTASR(X, Y, Beta_0, lambda, num_iterations, L_0));
-    return rcpp_result_gen;
-END_RCPP
-}
-// ISTA_DG
-Rcpp::NumericVector ISTA_DG(Rcpp::NumericMatrix X, Rcpp::NumericVector Y, Rcpp::NumericVector Beta_0, double lambda, double duality_gap_target, double L_0);
-RcppExport SEXP HDIM_ISTA_DG(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP lambdaSEXP, SEXP duality_gap_targetSEXP, SEXP L_0SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Beta_0(Beta_0SEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< double >::type duality_gap_target(duality_gap_targetSEXP);
-    Rcpp::traits::input_parameter< double >::type L_0(L_0SEXP);
-    rcpp_result_gen = Rcpp::wrap(ISTA_DG(X, Y, Beta_0, lambda, duality_gap_target, L_0));
-    return rcpp_result_gen;
-END_RCPP
-}
-// ISTASR_DG
-Rcpp::NumericVector ISTASR_DG(Rcpp::NumericMatrix X, Rcpp::NumericVector Y, Rcpp::NumericVector Beta_0, double lambda, double duality_gap_target, double L_0);
-RcppExport SEXP HDIM_ISTASR_DG(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP lambdaSEXP, SEXP duality_gap_targetSEXP, SEXP L_0SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Beta_0(Beta_0SEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< double >::type duality_gap_target(duality_gap_targetSEXP);
-    Rcpp::traits::input_parameter< double >::type L_0(L_0SEXP);
-    rcpp_result_gen = Rcpp::wrap(ISTASR_DG(X, Y, Beta_0, lambda, duality_gap_target, L_0));
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type Beta_0(Beta_0SEXP);
+    Rcpp::traits::input_parameter< const double >::type Lambda(LambdaSEXP);
+    Rcpp::traits::input_parameter< const SEXP >::type convergence_criteria(convergence_criteriaSEXP);
+    Rcpp::traits::input_parameter< const double >::type L_0(L_0SEXP);
+    Rcpp::traits::input_parameter< const bool >::type use_screening_rules(use_screening_rulesSEXP);
+    Rcpp::traits::input_parameter< const bool >::type use_single_precision(use_single_precisionSEXP);
+    rcpp_result_gen = Rcpp::wrap(ISTA(X, Y, Beta_0, Lambda, convergence_criteria, L_0, use_screening_rules, use_single_precision));
     return rcpp_result_gen;
 END_RCPP
 }
 // FISTA
-Rcpp::NumericVector FISTA(Rcpp::NumericMatrix X, Rcpp::NumericVector Y, Rcpp::NumericVector Beta_0, double lambda, unsigned int num_iterations, double L_0);
-RcppExport SEXP HDIM_FISTA(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP lambdaSEXP, SEXP num_iterationsSEXP, SEXP L_0SEXP) {
+Rcpp::NumericVector FISTA(const Rcpp::NumericMatrix X, const Rcpp::NumericVector Y, const Rcpp::NumericVector Beta_0, const double Lambda, const SEXP convergence_criteria, const double L_0, const bool use_screening_rules, const bool use_single_precision);
+RcppExport SEXP HDIM_FISTA(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP LambdaSEXP, SEXP convergence_criteriaSEXP, SEXP L_0SEXP, SEXP use_screening_rulesSEXP, SEXP use_single_precisionSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Beta_0(Beta_0SEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type num_iterations(num_iterationsSEXP);
-    Rcpp::traits::input_parameter< double >::type L_0(L_0SEXP);
-    rcpp_result_gen = Rcpp::wrap(FISTA(X, Y, Beta_0, lambda, num_iterations, L_0));
-    return rcpp_result_gen;
-END_RCPP
-}
-// FISTASR
-Rcpp::NumericVector FISTASR(Rcpp::NumericMatrix X, Rcpp::NumericVector Y, Rcpp::NumericVector Beta_0, double lambda, unsigned int num_iterations, double L_0);
-RcppExport SEXP HDIM_FISTASR(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP lambdaSEXP, SEXP num_iterationsSEXP, SEXP L_0SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Beta_0(Beta_0SEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< unsigned int >::type num_iterations(num_iterationsSEXP);
-    Rcpp::traits::input_parameter< double >::type L_0(L_0SEXP);
-    rcpp_result_gen = Rcpp::wrap(FISTASR(X, Y, Beta_0, lambda, num_iterations, L_0));
-    return rcpp_result_gen;
-END_RCPP
-}
-// FISTA_DG
-Rcpp::NumericVector FISTA_DG(Rcpp::NumericMatrix X, Rcpp::NumericVector Y, Rcpp::NumericVector Beta_0, double lambda, double duality_gap_target, double L_0);
-RcppExport SEXP HDIM_FISTA_DG(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP lambdaSEXP, SEXP duality_gap_targetSEXP, SEXP L_0SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Beta_0(Beta_0SEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< double >::type duality_gap_target(duality_gap_targetSEXP);
-    Rcpp::traits::input_parameter< double >::type L_0(L_0SEXP);
-    rcpp_result_gen = Rcpp::wrap(FISTA_DG(X, Y, Beta_0, lambda, duality_gap_target, L_0));
-    return rcpp_result_gen;
-END_RCPP
-}
-// FISTASR_DG
-Rcpp::NumericVector FISTASR_DG(Rcpp::NumericMatrix X, Rcpp::NumericVector Y, Rcpp::NumericVector Beta_0, double lambda, double duality_gap_target, double L_0);
-RcppExport SEXP HDIM_FISTASR_DG(SEXP XSEXP, SEXP YSEXP, SEXP Beta_0SEXP, SEXP lambdaSEXP, SEXP duality_gap_targetSEXP, SEXP L_0SEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type Beta_0(Beta_0SEXP);
-    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< double >::type duality_gap_target(duality_gap_targetSEXP);
-    Rcpp::traits::input_parameter< double >::type L_0(L_0SEXP);
-    rcpp_result_gen = Rcpp::wrap(FISTASR_DG(X, Y, Beta_0, lambda, duality_gap_target, L_0));
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type Beta_0(Beta_0SEXP);
+    Rcpp::traits::input_parameter< const double >::type Lambda(LambdaSEXP);
+    Rcpp::traits::input_parameter< const SEXP >::type convergence_criteria(convergence_criteriaSEXP);
+    Rcpp::traits::input_parameter< const double >::type L_0(L_0SEXP);
+    Rcpp::traits::input_parameter< const bool >::type use_screening_rules(use_screening_rulesSEXP);
+    Rcpp::traits::input_parameter< const bool >::type use_single_precision(use_single_precisionSEXP);
+    rcpp_result_gen = Rcpp::wrap(FISTA(X, Y, Beta_0, Lambda, convergence_criteria, L_0, use_screening_rules, use_single_precision));
     return rcpp_result_gen;
 END_RCPP
 }

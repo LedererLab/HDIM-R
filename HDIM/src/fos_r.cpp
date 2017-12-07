@@ -5,6 +5,7 @@
 //
 // C++ System headers
 #include <type_traits>
+#include <stdexcept>
 // Eigen Headers
 //
 // Boost Headers
@@ -16,6 +17,8 @@
 #include "FOS/Solvers/SubGradientDescent/ISTA/ista.hpp"
 #include "FOS/Solvers/SubGradientDescent/FISTA/fista.hpp"
 #include "FOS/Solvers/CoordinateDescent/coordinate_descent.hpp"
+
+// Functions that handle conversions between Rcpp and Eigen3 objects.
 
 template < typename T >
 Eigen::Matrix< T, Eigen::Dynamic, 1 > NumVect2Eigen( const Rcpp::NumericVector& vec ) {
@@ -61,8 +64,10 @@ Rcpp::NumericMatrix Eigen2NumMat( const Eigen::Matrix< T, Eigen::Dynamic, Eigen:
     return Rcpp::NumericMatrix::import( mat_data, mat_data + mat_data.size() );
 }
 
+// FOS
+
 template < typename T >
-Rcpp::List FOSBase( const Rcpp::NumericMatrix& X,
+Rcpp::List __FOS( const Rcpp::NumericMatrix& X,
                 const Rcpp::NumericVector& Y,
                 const std::string solver_type,
                 const bool use_single_precision = false ) {
@@ -158,212 +163,454 @@ Rcpp::List FOS( const Rcpp::NumericMatrix& X,
                 const bool use_single_precision = false ) {
 
     if( use_single_precision == true ) {
-      return FOSBase<float>( X, Y, solver_type );
+      return __FOS<float>( X, Y, solver_type );
     } else {
-      return FOSBase<double>( X, Y, solver_type );
+      return __FOS<double>( X, Y, solver_type );
     }
 
 }
 
-// [[Rcpp::export]]
-Rcpp::NumericVector CD( Rcpp::NumericMatrix X,
-                        Rcpp::NumericVector Y,
-                        Rcpp::NumericVector Beta_0,
-                        double lambda,
-                        unsigned int num_iterations ) {
+// Coordinate Descent
+
+struct fallthrough {};
+
+template< typename T, typename CC >
+Eigen::Matrix< T, Eigen::Dynamic, 1 > __CD_helper( const Eigen::Matrix< T, Eigen::Dynamic, Eigen::Dynamic >& X,
+                                                   const Eigen::Matrix< T, Eigen::Dynamic, 1 >& Y,
+                                                   const Eigen::Matrix< T, Eigen::Dynamic, 1 >& Beta_0,
+                                                   const T Lambda,
+                                                   const CC convergence_criteria,
+                                                   const bool use_screening_rules ) {
+
+  if( use_screening_rules ) {
+    hdim::LazyCoordinateDescent<T,hdim::internal::ScreeningSolver<T>> cd_solver( X, Y, Beta_0 );
+    return cd_solver( X, Y, Beta_0, Lambda, convergence_criteria );
+  } else {
+    hdim::LazyCoordinateDescent<T,hdim::internal::Solver<T>> cd_solver( X, Y, Beta_0 );
+    return cd_solver( X, Y, Beta_0, Lambda, convergence_criteria );
+  }
+
+}
+
+template <typename T>
+Rcpp::NumericVector __CD( const Rcpp::NumericMatrix X,
+                          const Rcpp::NumericVector Y,
+                          const Rcpp::NumericVector Beta_0,
+                          const double Lambda,
+                          const T convergence_criteria,
+                          const bool use_screening_rules = false,
+                          const bool use_single_precision = false ) {
+
+    std::cout << "Using default!" << std::endl;
+    return Rcpp::NumericVector();
+
+}
+
+template <>
+Rcpp::NumericVector __CD<double>( const Rcpp::NumericMatrix X,
+                                  const Rcpp::NumericVector Y,
+                                  const Rcpp::NumericVector Beta_0,
+                                  const double Lambda,
+                                  const double convergence_criteria,
+                                  const bool use_screening_rules,
+                                  const bool use_single_precision ) {
+
+  if( use_single_precision == false ) {
 
     Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
     Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
     Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
 
-    hdim::LazyCoordinateDescent<double,hdim::internal::Solver<double>> cd_solver( mat_X, vect_Y, vect_Beta_0 );
+    return Eigen2NumVec<double>( __CD_helper<double,double>( mat_X,
+                                                             vect_Y,
+                                                             vect_Beta_0,
+                                                             Lambda,
+                                                             convergence_criteria,
+                                                             use_screening_rules ) );
 
-    return Eigen2NumVec<double>( cd_solver( mat_X, vect_Y, vect_Beta_0, lambda, num_iterations ) );
+  } else {
+
+    Eigen::MatrixXf mat_X = NumMat2Eigen<float>(X);
+    Eigen::VectorXf vect_Y = NumVect2Eigen<float>(Y);
+    Eigen::VectorXf vect_Beta_0 = NumVect2Eigen<float>(Beta_0);
+
+    return Eigen2NumVec<float>( __CD_helper<float,float>( mat_X,
+                                                          vect_Y,
+                                                          vect_Beta_0,
+                                                          Lambda,
+                                                          convergence_criteria,
+                                                          use_screening_rules ) );
+
+  }
+
+}
+
+template <>
+Rcpp::NumericVector __CD<unsigned int>( const Rcpp::NumericMatrix X,
+                                        const Rcpp::NumericVector Y,
+                                        const Rcpp::NumericVector Beta_0,
+                                        const double Lambda,
+                                        const unsigned int convergence_criteria,
+                                        const bool use_screening_rules,
+                                        const bool use_single_precision ) {
+
+  if( use_single_precision == false ) {
+
+    Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
+    Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
+    Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
+
+    return Eigen2NumVec<double>( __CD_helper<double,unsigned int>( mat_X,
+                                                                   vect_Y,
+                                                                   vect_Beta_0,
+                                                                   Lambda,
+                                                                   convergence_criteria,
+                                                                   use_screening_rules ) );
+
+  } else {
+
+    Eigen::MatrixXf mat_X = NumMat2Eigen<float>(X);
+    Eigen::VectorXf vect_Y = NumVect2Eigen<float>(Y);
+    Eigen::VectorXf vect_Beta_0 = NumVect2Eigen<float>(Beta_0);
+
+    return Eigen2NumVec<float>( __CD_helper<float,unsigned int>( mat_X,
+                                                                 vect_Y,
+                                                                 vect_Beta_0,
+                                                                 Lambda,
+                                                                 convergence_criteria,
+                                                                 use_screening_rules ) );
+
+  }
+
 }
 
 // [[Rcpp::export]]
-Rcpp::NumericVector CDSR( Rcpp::NumericMatrix X,
-                        Rcpp::NumericVector Y,
-                        Rcpp::NumericVector Beta_0,
-                        double lambda,
-                        unsigned int num_iterations ) {
+Rcpp::NumericVector CoordinateDescent( Rcpp::NumericMatrix& X,
+                                       Rcpp::NumericVector& Y,
+                                       Rcpp::NumericVector& Beta_0,
+                                       const double Lambda,
+                                       SEXP convergence_criteria,
+                                       const bool use_screening_rules = false,
+                                       const bool use_single_precision = false ) {
+
+    switch (TYPEOF(convergence_criteria)) {
+        case INTSXP: {
+            return __CD<unsigned int>( X,
+                                       Y,
+                                       Beta_0,
+                                       Lambda,
+                                       static_cast<unsigned int>(INTEGER(convergence_criteria)[0]),
+                                       use_screening_rules,
+                                       use_single_precision );
+        }
+        case REALSXP: {
+            return __CD<double>( X,
+                                 Y,
+                                 Beta_0,
+                                 Lambda,
+                                 static_cast<double>(REAL(convergence_criteria)[0]),
+                                 use_screening_rules,
+                                 use_single_precision );
+        }
+        default: {
+            Rcpp::warning("Unmatched SEXPTYPE!");
+            throw std::invalid_argument( "Coordinate Descent can't be used for this type!" );
+            return __CD<fallthrough>( X,
+                                      Y,
+                                      Beta_0,
+                                      Lambda,
+                                      fallthrough(),
+                                      use_screening_rules,
+                                      use_single_precision );
+        }
+    }
+
+}
+
+// ISTA
+
+template< typename T, typename CC >
+Eigen::Matrix< T, Eigen::Dynamic, 1 > __ISTA_helper( const Eigen::Matrix< T, Eigen::Dynamic, Eigen::Dynamic >& X,
+                                                     const Eigen::Matrix< T, Eigen::Dynamic, 1 >& Y,
+                                                     const Eigen::Matrix< T, Eigen::Dynamic, 1 >& Beta_0,
+                                                     const T Lambda,
+                                                     const T L_0,
+                                                     const CC convergence_criteria,
+                                                     const bool use_screening_rules ) {
+
+  if( use_screening_rules ) {
+    hdim::ISTA<T,hdim::internal::ScreeningSolver<T>> ista_solver( L_0 );
+    return ista_solver( X, Y, Beta_0, Lambda, convergence_criteria );
+  } else {
+    hdim::ISTA<T,hdim::internal::Solver<T>> ista_solver( L_0 );
+    return ista_solver( X, Y, Beta_0, Lambda, convergence_criteria );
+  }
+
+}
+
+template <typename T>
+Rcpp::NumericVector __ISTA( const Rcpp::NumericMatrix X,
+                            const Rcpp::NumericVector Y,
+                            const Rcpp::NumericVector Beta_0,
+                            const double Lambda,
+                            const T convergence_criteria,
+                            const double L_0 = 0.1,
+                            const bool use_screening_rules = false,
+                            const bool use_single_precision = false ) {
+
+    std::cout << "Using default!" << std::endl;
+    return Rcpp::NumericVector();
+
+}
+
+template <>
+Rcpp::NumericVector __ISTA<double>( const Rcpp::NumericMatrix X,
+                                    const Rcpp::NumericVector Y,
+                                    const Rcpp::NumericVector Beta_0,
+                                    const double Lambda,
+                                    const double convergence_criteria,
+                                    const double L_0,
+                                    const bool use_screening_rules,
+                                    const bool use_single_precision ) {
+
+  if( use_single_precision == false ) {
 
     Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
     Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
     Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
 
-    hdim::LazyCoordinateDescent<double,hdim::internal::ScreeningSolver<double>> cd_solver( mat_X, vect_Y, vect_Beta_0 );
+    return Eigen2NumVec<double>( __ISTA_helper<double,double>( mat_X, vect_Y, vect_Beta_0, Lambda, convergence_criteria, L_0, use_screening_rules ) );
 
-    return Eigen2NumVec<double>( cd_solver( mat_X, vect_Y, vect_Beta_0, lambda, num_iterations ) );
+  } else {
+
+    Eigen::MatrixXf mat_X = NumMat2Eigen<float>(X);
+    Eigen::VectorXf vect_Y = NumVect2Eigen<float>(Y);
+    Eigen::VectorXf vect_Beta_0 = NumVect2Eigen<float>(Beta_0);
+
+    return Eigen2NumVec<float>( __ISTA_helper<float,float>( mat_X, vect_Y, vect_Beta_0, Lambda, convergence_criteria, L_0, use_screening_rules ) );
+
+  }
+
+}
+
+template <>
+Rcpp::NumericVector __ISTA<unsigned int>( const Rcpp::NumericMatrix X,
+                                          const Rcpp::NumericVector Y,
+                                          const Rcpp::NumericVector Beta_0,
+                                          const double Lambda,
+                                          const unsigned int convergence_criteria,
+                                          const double L_0,
+                                          const bool use_screening_rules,
+                                          const bool use_single_precision ) {
+
+  if( use_single_precision == false ) {
+
+    Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
+    Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
+    Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
+
+    return Eigen2NumVec<double>( __ISTA_helper<double,unsigned int>( mat_X, vect_Y, vect_Beta_0, Lambda, convergence_criteria, L_0, use_screening_rules ) );
+
+  } else {
+
+    Eigen::MatrixXf mat_X = NumMat2Eigen<float>(X);
+    Eigen::VectorXf vect_Y = NumVect2Eigen<float>(Y);
+    Eigen::VectorXf vect_Beta_0 = NumVect2Eigen<float>(Beta_0);
+
+    return Eigen2NumVec<float>( __ISTA_helper<float,unsigned int>( mat_X, vect_Y, vect_Beta_0, Lambda, convergence_criteria, L_0, use_screening_rules ) );
+
+  }
+
 }
 
 // [[Rcpp::export]]
-Rcpp::NumericVector CDDG( Rcpp::NumericMatrix X,
-                        Rcpp::NumericVector Y,
-                        Rcpp::NumericVector Beta_0,
-                        double lambda,
-                        double duality_gap_target ) {
+Rcpp::NumericVector ISTA( const Rcpp::NumericMatrix X,
+                                       const Rcpp::NumericVector Y,
+                                       const Rcpp::NumericVector Beta_0,
+                                       const double Lambda,
+                                       const SEXP convergence_criteria,
+                                       const double L_0 = 0.1,
+                                       const bool use_screening_rules = false,
+                                       const bool use_single_precision = false ) {
+
+    switch (TYPEOF(convergence_criteria)) {
+        case INTSXP: {
+            return __ISTA<unsigned int>( X,
+                                         Y,
+                                         Beta_0,
+                                         Lambda,
+                                         static_cast<unsigned int>(INTEGER(convergence_criteria)[0]),
+                                         L_0,
+                                         use_screening_rules,
+                                         use_single_precision );
+        }
+        case REALSXP: {
+            return __ISTA<double>( X,
+                                   Y,
+                                   Beta_0,
+                                   Lambda,
+                                   static_cast<double>(REAL(convergence_criteria)[0]),
+                                   L_0,
+                                   use_screening_rules,
+                                   use_single_precision );
+        }
+        default: {
+            Rcpp::warning("Unmatched SEXPTYPE!");
+            throw std::invalid_argument( "Coordinate Descent can't be used for this type!" );
+            return __ISTA<fallthrough>( X,
+                                        Y,
+                                        Beta_0,
+                                        Lambda,
+                                        fallthrough(),
+                                        L_0,
+                                        use_screening_rules,
+                                        use_single_precision );
+        }
+    }
+
+}
+
+// FISTA
+
+template <typename T>
+Rcpp::NumericVector __FISTA( const Rcpp::NumericMatrix X,
+                            const Rcpp::NumericVector Y,
+                            const Rcpp::NumericVector Beta_0,
+                            const double Lambda,
+                            const T convergence_criteria,
+                            const double L_0 = 0.1,
+                            const bool use_screening_rules = false,
+                            const bool use_single_precision = false ) {
+
+    std::cout << "Using default!" << std::endl;
+    return Rcpp::NumericVector();
+
+}
+
+template< typename T, typename CC >
+Eigen::Matrix< T, Eigen::Dynamic, 1 > __FISTA_helper( const Eigen::Matrix< T, Eigen::Dynamic, Eigen::Dynamic >& X,
+                                                     const Eigen::Matrix< T, Eigen::Dynamic, 1 >& Y,
+                                                     const Eigen::Matrix< T, Eigen::Dynamic, 1 >& Beta_0,
+                                                     const T Lambda,
+                                                     const T L_0,
+                                                     const CC convergence_criteria,
+                                                     const bool use_screening_rules ) {
+
+  if( use_screening_rules ) {
+    hdim::FISTA<T,hdim::internal::ScreeningSolver<T>> fista_solver( Beta_0, L_0 );
+    return fista_solver( X, Y, Beta_0, Lambda, convergence_criteria );
+  } else {
+    hdim::FISTA<T,hdim::internal::Solver<T>> fista_solver( Beta_0, L_0 );
+    return fista_solver( X, Y, Beta_0, Lambda, convergence_criteria );
+  }
+
+}
+
+template <>
+Rcpp::NumericVector __FISTA<double>( const Rcpp::NumericMatrix X,
+                                    const Rcpp::NumericVector Y,
+                                    const Rcpp::NumericVector Beta_0,
+                                    const double Lambda,
+                                    const double convergence_criteria,
+                                    const double L_0,
+                                    const bool use_screening_rules,
+                                    const bool use_single_precision ) {
+
+  if( use_single_precision == false ) {
 
     Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
     Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
     Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
 
-    hdim::LazyCoordinateDescent<double,hdim::internal::Solver<double>> cd_solver( mat_X, vect_Y, vect_Beta_0 );
+    return Eigen2NumVec<double>( __FISTA_helper<double,double>( mat_X, vect_Y, vect_Beta_0, Lambda, convergence_criteria, L_0, use_screening_rules ) );
 
-    return Eigen2NumVec<double>( cd_solver( mat_X, vect_Y, vect_Beta_0, lambda, duality_gap_target ) );
+  } else {
+
+    Eigen::MatrixXf mat_X = NumMat2Eigen<float>(X);
+    Eigen::VectorXf vect_Y = NumVect2Eigen<float>(Y);
+    Eigen::VectorXf vect_Beta_0 = NumVect2Eigen<float>(Beta_0);
+
+    return Eigen2NumVec<float>( __FISTA_helper<float,float>( mat_X, vect_Y, vect_Beta_0, Lambda, convergence_criteria, L_0, use_screening_rules ) );
+
+  }
+
+}
+
+template <>
+Rcpp::NumericVector __FISTA<unsigned int>( const Rcpp::NumericMatrix X,
+                                          const Rcpp::NumericVector Y,
+                                          const Rcpp::NumericVector Beta_0,
+                                          const double Lambda,
+                                          const unsigned int convergence_criteria,
+                                          const double L_0,
+                                          const bool use_screening_rules,
+                                          const bool use_single_precision ) {
+
+  if( use_single_precision == false ) {
+
+    Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
+    Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
+    Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
+
+    return Eigen2NumVec<double>( __FISTA_helper<double,unsigned int>( mat_X, vect_Y, vect_Beta_0, Lambda, convergence_criteria, L_0, use_screening_rules ) );
+
+  } else {
+
+    Eigen::MatrixXf mat_X = NumMat2Eigen<float>(X);
+    Eigen::VectorXf vect_Y = NumVect2Eigen<float>(Y);
+    Eigen::VectorXf vect_Beta_0 = NumVect2Eigen<float>(Beta_0);
+
+    return Eigen2NumVec<float>( __FISTA_helper<float,unsigned int>( mat_X, vect_Y, vect_Beta_0, Lambda, convergence_criteria, L_0, use_screening_rules ) );
+
+  }
+
 }
 
 // [[Rcpp::export]]
-Rcpp::NumericVector CDSRDG( Rcpp::NumericMatrix X,
-	                Rcpp::NumericVector Y,
-	                Rcpp::NumericVector Beta_0,
-	                double lambda,
-	                double duality_gap_target ) {
+Rcpp::NumericVector FISTA( const Rcpp::NumericMatrix X,
+                                       const Rcpp::NumericVector Y,
+                                       const Rcpp::NumericVector Beta_0,
+                                       const double Lambda,
+                                       const SEXP convergence_criteria,
+                                       const double L_0 = 0.1,
+                                       const bool use_screening_rules = false,
+                                       const bool use_single_precision = false ) {
 
-    Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
-    Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
-    Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
+    switch (TYPEOF(convergence_criteria)) {
+        case INTSXP: {
+            return __FISTA<unsigned int>( X,
+                                         Y,
+                                         Beta_0,
+                                         Lambda,
+                                         static_cast<unsigned int>(INTEGER(convergence_criteria)[0]),
+                                         L_0,
+                                         use_screening_rules,
+                                         use_single_precision );
+        }
+        case REALSXP: {
+            return __FISTA<double>( X,
+                                   Y,
+                                   Beta_0,
+                                   Lambda,
+                                   static_cast<double>(REAL(convergence_criteria)[0]),
+                                   L_0,
+                                   use_screening_rules,
+                                   use_single_precision );
+        }
+        default: {
+            Rcpp::warning("Unmatched SEXPTYPE!");
+            throw std::invalid_argument( "Coordinate Descent can't be used for this type!" );
+            return __FISTA<fallthrough>( X,
+                                      Y,
+                                      Beta_0,
+                                      Lambda,
+                                      fallthrough(),
+                                      L_0,
+                                      use_screening_rules,
+                                      use_single_precision );
+        }
+    }
 
-    hdim::LazyCoordinateDescent<double,hdim::internal::ScreeningSolver<double>> cd_solver( mat_X, vect_Y, vect_Beta_0 );
-
-    return Eigen2NumVec<double>( cd_solver( mat_X, vect_Y, vect_Beta_0, lambda, duality_gap_target ) );
-}
-
-
-// [[Rcpp::export]]
-Rcpp::NumericVector ISTA( Rcpp::NumericMatrix X,
-                          Rcpp::NumericVector Y,
-                          Rcpp::NumericVector Beta_0,
-                          double lambda,
-                          unsigned int num_iterations,
-                          double L_0 = 0.1 ) {
-
-    Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
-    Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
-    Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
-
-    hdim::ISTA<double,hdim::internal::Solver<double>> ista_solver( static_cast<double>( L_0 ) );
-
-    return Eigen2NumVec<double>( ista_solver( mat_X, vect_Y, vect_Beta_0, lambda, num_iterations ) );
-}
-
-// [[Rcpp::export]]
-Rcpp::NumericVector ISTASR( Rcpp::NumericMatrix X,
-                          Rcpp::NumericVector Y,
-                          Rcpp::NumericVector Beta_0,
-                          double lambda,
-                          unsigned int num_iterations,
-                          double L_0 = 0.1 ) {
-
-    Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
-    Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
-    Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
-
-    hdim::ISTA<double,hdim::internal::ScreeningSolver<double>> ista_solver( static_cast<double>( L_0 ) );
-
-    return Eigen2NumVec<double>( ista_solver( mat_X, vect_Y, vect_Beta_0, lambda, num_iterations ) );
-}
-
-// [[Rcpp::export]]
-Rcpp::NumericVector ISTA_DG( Rcpp::NumericMatrix X,
-                          Rcpp::NumericVector Y,
-                          Rcpp::NumericVector Beta_0,
-                          double lambda,
-                          double duality_gap_target,
-                          double L_0 = 0.1 ) {
-
-    Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
-    Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
-    Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
-
-    hdim::ISTA<double,hdim::internal::Solver<double>> ista_solver( static_cast<double>( L_0 ) );
-
-    return Eigen2NumVec<double>( ista_solver( mat_X, vect_Y, vect_Beta_0, lambda, duality_gap_target ) );
-}
-
-// [[Rcpp::export]]
-Rcpp::NumericVector ISTASR_DG( Rcpp::NumericMatrix X,
-                          Rcpp::NumericVector Y,
-                          Rcpp::NumericVector Beta_0,
-                          double lambda,
-                          double duality_gap_target,
-                          double L_0 = 0.1 ) {
-
-    Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
-    Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
-    Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
-
-    hdim::ISTA<double,hdim::internal::ScreeningSolver<double>> ista_solver( static_cast<double>( L_0 ) );
-
-    return Eigen2NumVec<double>( ista_solver( mat_X, vect_Y, vect_Beta_0, lambda, duality_gap_target ) );
-}
-
-// [[Rcpp::export]]
-Rcpp::NumericVector FISTA( Rcpp::NumericMatrix X,
-                           Rcpp::NumericVector Y,
-                           Rcpp::NumericVector Beta_0,
-                           double lambda,
-                           unsigned int num_iterations,
-                           double L_0 = 0.1 ) {
-
-    Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
-    Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
-    Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
-
-    hdim::FISTA<double,hdim::internal::Solver<double>> fista_solver( vect_Beta_0, static_cast<double>( L_0 ) );
-
-    return Eigen2NumVec<double>( fista_solver( mat_X, vect_Y, vect_Beta_0, lambda, num_iterations ) );
-}
-
-// [[Rcpp::export]]
-Rcpp::NumericVector FISTASR( Rcpp::NumericMatrix X,
-                          Rcpp::NumericVector Y,
-                          Rcpp::NumericVector Beta_0,
-                          double lambda,
-                          unsigned int num_iterations,
-                          double L_0 = 0.1 ) {
-
-    Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
-    Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
-    Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
-
-    hdim::FISTA<double,hdim::internal::ScreeningSolver<double>> fista_solver( vect_Beta_0, static_cast<double>( L_0 ) );
-
-    return Eigen2NumVec<double>( fista_solver( mat_X, vect_Y, vect_Beta_0, lambda, num_iterations ) );
-}
-
-// [[Rcpp::export]]
-Rcpp::NumericVector FISTA_DG( Rcpp::NumericMatrix X,
-                          Rcpp::NumericVector Y,
-                          Rcpp::NumericVector Beta_0,
-                          double lambda,
-                          double duality_gap_target,
-                          double L_0 = 0.1 ) {
-
-    Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
-    Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
-    Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
-
-    hdim::FISTA<double,hdim::internal::Solver<double>> fista_solver( vect_Beta_0, static_cast<double>( L_0 ) );
-
-    return Eigen2NumVec<double>( fista_solver( mat_X, vect_Y, vect_Beta_0, lambda, duality_gap_target ) );
-}
-
-// [[Rcpp::export]]
-Rcpp::NumericVector FISTASR_DG( Rcpp::NumericMatrix X,
-                          Rcpp::NumericVector Y,
-                          Rcpp::NumericVector Beta_0,
-                          double lambda,
-                          double duality_gap_target,
-                          double L_0 = 0.1 ) {
-
-    Eigen::MatrixXd mat_X = NumMat2Eigen<double>(X);
-    Eigen::VectorXd vect_Y = NumVect2Eigen<double>(Y);
-    Eigen::VectorXd vect_Beta_0 = NumVect2Eigen<double>(Beta_0);
-
-    hdim::FISTA<double,hdim::internal::ScreeningSolver<double>> fista_solver( vect_Beta_0, static_cast<double>( L_0 ) );
-
-    return Eigen2NumVec<double>( fista_solver( mat_X, vect_Y, vect_Beta_0, lambda, duality_gap_target ) );
 }
 
 #endif // FOS_R_H

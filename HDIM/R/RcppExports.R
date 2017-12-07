@@ -45,51 +45,15 @@ FOS <- function(X, Y, solver_type, use_single_precision = FALSE) {
     .Call('HDIM_FOS', PACKAGE = 'HDIM', X, Y, solver_type, use_single_precision)
 }
 
-CD <- function(X, Y, Beta_0, lambda, num_iterations) {
-    .Call('HDIM_CD', PACKAGE = 'HDIM', X, Y, Beta_0, lambda, num_iterations)
+CoordinateDescent <- function(X, Y, Beta_0, Lambda, convergence_criteria, use_screening_rules = FALSE, use_single_precision = FALSE) {
+    .Call('HDIM_CoordinateDescent', PACKAGE = 'HDIM', X, Y, Beta_0, Lambda, convergence_criteria, use_screening_rules, use_single_precision)
 }
 
-CDSR <- function(X, Y, Beta_0, lambda, num_iterations) {
-    .Call('HDIM_CDSR', PACKAGE = 'HDIM', X, Y, Beta_0, lambda, num_iterations)
+ISTA <- function(X, Y, Beta_0, Lambda, convergence_criteria, L_0 = 0.1, use_screening_rules = FALSE, use_single_precision = FALSE) {
+    .Call('HDIM_ISTA', PACKAGE = 'HDIM', X, Y, Beta_0, Lambda, convergence_criteria, L_0, use_screening_rules, use_single_precision)
 }
 
-CDDG <- function(X, Y, Beta_0, lambda, duality_gap_target) {
-    .Call('HDIM_CDDG', PACKAGE = 'HDIM', X, Y, Beta_0, lambda, duality_gap_target)
-}
-
-CDSRDG <- function(X, Y, Beta_0, lambda, duality_gap_target) {
-    .Call('HDIM_CDSRDG', PACKAGE = 'HDIM', X, Y, Beta_0, lambda, duality_gap_target)
-}
-
-ISTA <- function(X, Y, Beta_0, lambda, num_iterations, L_0 = 0.1) {
-    .Call('HDIM_ISTA', PACKAGE = 'HDIM', X, Y, Beta_0, lambda, num_iterations, L_0)
-}
-
-ISTASR <- function(X, Y, Beta_0, lambda, num_iterations, L_0 = 0.1) {
-    .Call('HDIM_ISTASR', PACKAGE = 'HDIM', X, Y, Beta_0, lambda, num_iterations, L_0)
-}
-
-ISTA_DG <- function(X, Y, Beta_0, lambda, duality_gap_target, L_0 = 0.1) {
-    .Call('HDIM_ISTA_DG', PACKAGE = 'HDIM', X, Y, Beta_0, lambda, duality_gap_target, L_0)
-}
-
-ISTASR_DG <- function(X, Y, Beta_0, lambda, duality_gap_target, L_0 = 0.1) {
-    .Call('HDIM_ISTASR_DG', PACKAGE = 'HDIM', X, Y, Beta_0, lambda, duality_gap_target, L_0)
-}
-
-FISTA <- function(X, Y, Beta_0, lambda, num_iterations, L_0 = 0.1) {
-    .Call('HDIM_FISTA', PACKAGE = 'HDIM', X, Y, Beta_0, lambda, num_iterations, L_0)
-}
-
-FISTASR <- function(X, Y, Beta_0, lambda, num_iterations, L_0 = 0.1) {
-    .Call('HDIM_FISTASR', PACKAGE = 'HDIM', X, Y, Beta_0, lambda, num_iterations, L_0)
-}
-
-FISTA_DG <- function(X, Y, Beta_0, lambda, duality_gap_target, L_0 = 0.1) {
-    .Call('HDIM_FISTA_DG', PACKAGE = 'HDIM', X, Y, Beta_0, lambda, duality_gap_target, L_0)
-}
-
-FISTASR_DG <- function(X, Y, Beta_0, lambda, duality_gap_target, L_0 = 0.1) {
-    .Call('HDIM_FISTASR_DG', PACKAGE = 'HDIM', X, Y, Beta_0, lambda, duality_gap_target, L_0)
+FISTA <- function(X, Y, Beta_0, Lambda, convergence_criteria, L_0 = 0.1, use_screening_rules = FALSE, use_single_precision = FALSE) {
+    .Call('HDIM_FISTA', PACKAGE = 'HDIM', X, Y, Beta_0, Lambda, convergence_criteria, L_0, use_screening_rules, use_single_precision)
 }
 
