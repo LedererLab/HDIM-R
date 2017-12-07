@@ -36,7 +36,7 @@ be located in the same directory as the root of the HDIM package.
 
 ##### Building
 
-- Clone the HDIM package into the directory where the Eigen3 library is located using `git clone --recursive`.
+- Clone the HDIM package into the directory where the Eigen3 library is located using `git clone --recursive https://github.com/LedererLab/HDIM-R.git`.
 - Navigate to $PKG_DIR/R_Wrapper, where PKG_DIR is the root directory of the cloned repository.
 - Find the file `win_build.ps1` and run it using PowerShell.
 - This will run a preprocessing step using Rcpp then build and install the R Wrapper.
@@ -50,7 +50,7 @@ be located in the same directory as the root of the HDIM package.
 
 ##### Building
 
-- Clone the HDIM package into a convenient location.
+- Clone the HDIM package into a convenient location `git clone --recursive https://github.com/LedererLab/HDIM-R.git`.
 - Navigate to $PKG_DIR/R_Wrapper, where PKG_DIR is the root directory of the cloned repository.
 - Find the file `nix_build.sh` and mark it as executable ( `chmod +x ./nix_build.sh` ).
 - This will run a preprocessing step using Rcpp then build and install the R Wrapper.
